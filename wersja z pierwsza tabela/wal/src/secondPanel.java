@@ -13,6 +13,8 @@ public class secondPanel  {
     private JButton showButton;
     private int selectedRaw;
     JFrame secondFrame=new JFrame();
+    sqlKomendy komendy=new sqlKomendy();
+
 
     public JTable getTable(){
         return listOfTables;
@@ -30,6 +32,9 @@ public class secondPanel  {
 
     }
     public secondPanel(){
+
+
+
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -41,7 +46,10 @@ public class secondPanel  {
         showButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new sqlKomendy().enterTable(selectedRaw);
+
+                listOfTables.setModel(komendy.enterTable(selectedRaw));
+                showButton.setVisible(false);
+
             }
         });
         listOfTables.addMouseListener(new MouseAdapter() {
@@ -49,10 +57,8 @@ public class secondPanel  {
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
                 selectedRaw=listOfTables.getSelectedRow();
-                /*System.out.println(selectedRaw);
-                System.out.println("Nazwa kolumny "+listOfTables.getColumnName(0));
-                System.out.println("Numer "+listOfTables.getSelectedColumn());
-                System.out.println("");*/
+                System.out.println(selectedRaw);
+
 
             }
         });
@@ -64,7 +70,5 @@ public class secondPanel  {
     }
 
 
-    public static void main(String[] args) {
-        //System.out.println(listOfTables.getColumnName(listOfTables.getSelectedRow()));
-    }
+
 }
