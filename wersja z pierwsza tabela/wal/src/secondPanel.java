@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,8 +12,12 @@ public class secondPanel  {
     private JPanel tablePanel;
     private JButton backButton;
     private JButton showButton;
+    private JButton insertButton;
+    private JButton deleteButton;
     private int selectedRaw;
     JFrame secondFrame=new JFrame();
+    sqlKomendy komendy=new sqlKomendy();
+
 
     public JTable getTable(){
         return listOfTables;
@@ -30,6 +35,11 @@ public class secondPanel  {
 
     }
     public secondPanel(){
+insertButton.setVisible(false);
+deleteButton.setVisible(false);
+
+
+
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -41,7 +51,12 @@ public class secondPanel  {
         showButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new sqlKomendy().enterTable(selectedRaw);
+
+                listOfTables.setModel(komendy.enterTable(selectedRaw));
+                showButton.setVisible(false);
+                insertButton.setVisible(true);
+                deleteButton.setVisible(true);
+
             }
         });
         listOfTables.addMouseListener(new MouseAdapter() {
@@ -49,14 +64,18 @@ public class secondPanel  {
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
                 selectedRaw=listOfTables.getSelectedRow();
-                /*System.out.println(selectedRaw);
-                System.out.println("Nazwa kolumny "+listOfTables.getColumnName(0));
-                System.out.println("Numer "+listOfTables.getSelectedColumn());
-                System.out.println("");*/
+                System.out.println(selectedRaw);
+
 
             }
         });
 
+        insertButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                listOfTables.setModel(komendy.insert(selectedRaw));
+            }
+        });
     }
 
     public JPanel getPanel(){
@@ -64,7 +83,5 @@ public class secondPanel  {
     }
 
 
-    public static void main(String[] args) {
-        //System.out.println(listOfTables.getColumnName(listOfTables.getSelectedRow()));
-    }
+
 }
