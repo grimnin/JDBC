@@ -3,6 +3,7 @@ import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Connection;
 
 public class mainWindow {
     private JPanel panel1;
@@ -14,15 +15,21 @@ public class mainWindow {
 
 
     public mainWindow() {
+        Connection con = JDBC.getInstance().getConnection();
         JFrame main=new JFrame();
         sqlKomendy komendy=new sqlKomendy();
+        secondPanel panel=new secondPanel();
+
 
 
         changeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 main.dispose();
-                komendy.pokazTabele();
+panel.addFrame();
+panel.addPanel();
+panel.getTable().setModel(komendy.pokazTabele());
+
 
             }
         });

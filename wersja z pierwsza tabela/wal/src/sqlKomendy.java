@@ -1,19 +1,30 @@
+import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
 public class sqlKomendy {
+
     Connection con = JDBC.getInstance().getConnection();
     Statement stmt = null;
-    secondPanel tabele=new secondPanel();String nwm="";
-    String [] wiersz=new String[42];
-    String [] nazwytabel=new String[tabele.getTable().getRowCount()];
-    DefaultTableModel model= (DefaultTableModel) tabele.getTable().getModel();
-    String zapis="";
-    public void pokazTabele(){
-        tabele.addFrame();
-        tabele.addPanel();
+    DefaultTableModel model= new DefaultTableModel();
+    DefaultTableModel dane= new DefaultTableModel();
+    DefaultTableModel insert= new DefaultTableModel();
+    ArrayList<String> nazwytabel=new ArrayList<>();
+    String nazwaTabelki="";
+    String dodaj="";
+    String kolumny;
+    public sqlKomendy(){
+        pokazTabele();
+
+    }
+
+    public DefaultTableModel  pokazTabele(){
+
 
 
         try {
@@ -29,29 +40,18 @@ public class sqlKomendy {
                 model.setColumnIdentifiers(colName);
 
             }
-            String kolumny;
+            model.setRowCount(0);
 
             while(rs.next()){
 
-                kolumny=rs.getString(1);nwm+=kolumny+" ";
+                kolumny=rs.getString(1);
                 String [] row={kolumny};
-                wiersz=row;
+
                 model.addRow(row);
 
 
 
             }
-
-            //for(int i=0;i<nazwytabel.length)
-            nazwytabel=nwm.split(" ");
-
-
-
-
-
-
-
-
 
             stmt.close();
 
@@ -59,53 +59,172 @@ public class sqlKomendy {
         catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-        System.out.println(model.getValueAt(1,0));
+return model;
     }
-    public void enterTable(int selectedRow){
 
-
-        for(String helper:nazwytabel){
-            System.out.println(helper);
-        }
+    public DefaultTableModel enterTable(int selectedRow){
+        String nazwaTabeli= (String) model.getValueAt(selectedRow,0);
+        nazwaTabelki=nazwaTabeli;
 
         try {
             stmt = con.createStatement();
-
-            int nazwa =selectedRow;
-
-
-
-            /*
-            ResultSet rs=stmt.executeQuery("SELECT * FROM "+tablename);
+            ResultSet rs=stmt.executeQuery("SELECT * FROM "+nazwaTabeli);
             ResultSetMetaData metadata = rs.getMetaData();
             int cols= metadata.getColumnCount();
-
             String colName []=new String[cols];
+            dane.setRowCount(selectedRow);
 
             for(int i=0;i<cols;i++){
                 colName[i]=metadata.getColumnName(i+1);
-                model.setColumnIdentifiers(colName);
+                dane.setColumnIdentifiers(colName);
 
             }
-            String kolumny;
+
+            dane.setRowCount(0);
+            String wartosci="";
+            ArrayList<String> kontenerNaDane=new ArrayList<>();
+
             while(rs.next()){
-                kolumny=rs.getString(1);
-                String [] row={kolumny};
-                wiersz=row;
-                model.addRow(row);
+                for(int j=0;j<dane.getColumnCount();j++) {
+
+                    wartosci=rs.getString(j+1);
+                    kontenerNaDane.add(wartosci);
+
+
+                }
+
+                kontenerNaDane.toArray();
+                String [] row=kontenerNaDane.toArray(new String[kontenerNaDane.size()]);
+                dane.addRow(row);
+                kontenerNaDane.clear();
 
             }
 
-*/
             stmt.close();
 
 
-        } catch (SQLException throwables) {
+        }
+
+        catch (SQLException throwables) {
             throwables.printStackTrace();
         }
 
+        return dane;
+    }
+
+public DefaultTableModel insert(int selectedRow){
+        insert=dane;
+        String nazwaTabeli= (String) model.getValueAt(selectedRow,0);
+    try {
+        stmt = con.createStatement();
+        int nazwa =selectedRow;
+        ResultSet rs=stmt.executeQuery("SELECT * FROM "+nazwaTabeli);
+        ResultSetMetaData metadata = rs.getMetaData();
+        int cols= metadata.getColumnCount();
+        String colName []=new String[cols];
+
+
+
+        for(int i=0;i<cols;i++){
+            colName[i]=metadata.getColumnName(i+1);
+
+
+
+        }
+
+        JFrame frame = new JFrame("Dodawanie wierszy");
+        JTextField[] tfs = new JTextField[cols];
+        JLabel[] etykieta = new JLabel[cols];
+        int y=0;
+        int x=0;
+        for(int j=0;j<colName.length;j++){
+            if(j%10==0&&j>1){
+                x=x+130;
+                y=0;
+            }
+            etykieta[j] = new JLabel(colName[j]);
+            tfs[j] = new JTextField();
+            tfs[j].setBounds(x, y + 20, 120, 25);
+            etykieta[j].setBounds(x, y, 120, 25);
+            y += 40;
+            frame.add(etykieta[j]);
+            frame.add(tfs[j]);
+
+        }
+        JButton dodajButton = new JButton("Dodaj wiersz");
+        dodajButton.setBounds(x, y+20, 125, 40);
+        frame.add(dodajButton);
+        frame.setSize(400, 450);
+        frame.setLocationRelativeTo(null);
+        frame.setLayout(null);
+        frame.setVisible(true);
+
+        dodajButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                StringBuffer dodajButtonData = new StringBuffer();
+                String data;
+                for (int i = 0; i < tfs.length - 1; i++) {
+                    dodajButtonData.append("'" + tfs[i].getText() + "', ");
+                    tfs[i].setText("");
+                }
+                dodajButtonData.append("'" + (tfs[tfs.length - 1].getText()) + "'");
+                tfs[tfs.length - 1].setText("");
+                data = dodajButtonData.toString();
+                JFrame komunikat = new JFrame("Wynik operacji");
+                JOptionPane confirm=new JOptionPane("Wynik operacji");
+                komunikat.setLocationRelativeTo(frame);
+                komunikat.setVisible(true);
+                komunikat.setSize(300,100);
+                komunikat.add(confirm);
+
+                try {
+
+                    Statement stmt = con.createStatement();
+                    String sql = "INSERT INTO " + nazwaTabeli + " VALUES (" + data + ")";
+                    stmt.executeUpdate(sql);
+
+                    String replacedString = data.replace(", '", " ").replace("'", "");
+                    dodaj=replacedString;
+                    String [] dodane=dodaj.split(" ");
+                    insert.addRow(dodane);
+
+                    confirm.setMessage("Dodano dane");
+
+                } catch (SQLException a) {
+                    System.out.println(a);
+                    confirm.setMessage("Blad");
+                }
+
+            }
+        });
+
+
+
+
+    } catch (SQLException throwables) {
+        throwables.printStackTrace();
     }
 
 
+
+        return insert;
+}
+
+public DefaultTableModel usunDane(int deletedRow, DefaultTableModel model){
+    DefaultTableModel usun=model;
+    try {
+        stmt = con.createStatement();
+        ResultSet rs=stmt.executeQuery("DELETE  FROM "+nazwaTabelki+" WHERE "+usun.getColumnName(0)+"="+usun.getValueAt(deletedRow,0));
+        usun.removeRow(deletedRow);
+        stmt.close();
+
+    }
+    catch (SQLException throwables) {
+        throwables.printStackTrace();
+    }
+
+return usun;
+}
 
 }
